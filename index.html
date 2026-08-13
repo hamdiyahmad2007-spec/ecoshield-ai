@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoShield AI — Executive Smart Farming Demo</title>
+  <meta name="description" content="EcoShield AI delivers AI-powered agricultural insights without requiring field hardware using Google Earth Engine, Sentinel-2 imagery, AlphaEarth Foundations, WeatherNext, and Gemini AI." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-[#020604] text-gray-100 min-h-screen font-['Plus_Jakarta_Sans'] relative">
+
+  <!-- Layer 1: Background Forest Texture & Ambient Lighting -->
+  <div class="bg-forest-layer"></div>
+  <div class="bg-ambient-orbs"></div>
+  <canvas id="ambient-particles"></canvas>
+
+  <!-- Top Apple x Google AI Header Navigation -->
+  <header class="sticky top-0 z-50 bg-[#020604]/80 backdrop-blur-2xl border-b border-emerald-500/15 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-green-400 to-emerald-300 p-0.5 shadow-xl shadow-emerald-500/20">
+          <div class="w-full h-full bg-[#04140B] rounded-[14px] flex items-center justify-center">
+            <span class="text-xl">🌱</span>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-extrabold tracking-tight text-white">EcoShield<span class="text-emerald-400">AI</span></span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 uppercase tracking-wider">Satellite AI</span>
+          </div>
+          <p class="text-[11px] text-gray-400 font-medium">Google Earth Engine & AlphaEarth Foundations</p>
+        </div>
+      </div>
+
+      <!-- Center Navigation Tabs -->
+      <nav class="hidden md:flex items-center gap-1.5 bg-black/40 backdrop-blur-xl p-1.5 rounded-full border border-white/10 shadow-2xl">
+        <button class="nav-tab active" data-target="hero-section">
+          <span>🏠</span> Overview
+        </button>
+        <button class="nav-tab" data-target="map-section">
+          <span>🗺️</span> GIS Satellite Map
+        </button>
+        <button class="nav-tab" data-target="dashboard-cards">
+          <span>📊</span> Environmental Insights
+        </button>
+        <button class="nav-tab" data-target="scanner-section">
+          <span>🛰️</span> AI Scan
+        </button>
+        <button class="nav-tab" data-target="ai-assistant">
+          <span>💬</span> Gemini AI Bot
+        </button>
+      </nav>
+
+      <!-- Right Action Bar -->
+      <div class="flex items-center gap-3.5">
+        <div class="google-challenge-badge hidden lg:flex">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          Google AI for Planet Demo
+        </div>
+
+        <button onclick="triggerGlobalRefresh()" title="Refresh Satellite Data Stream" class="p-2.5 rounded-full bg-white/5 hover:bg-white/12 border border-white/15 text-gray-300 hover:text-white transition-all backdrop-blur-xl shadow-lg">
+          <span id="global-refresh-btn" class="block text-sm">🔄</span>
+        </button>
+
+        <button onclick="document.getElementById('scanner-section').scrollIntoView({behavior:'smooth'})" class="btn-primary text-xs py-2.5 px-5 shadow-emerald-500/30">
+          <span>⚡</span> Run AI Scan
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+    <!-- 1. Hero Section -->
+    <section id="hero-section" class="relative rounded-[32px] overflow-hidden border border-emerald-500/25 p-8 sm:p-14 glass-panel shadow-2xl">
+      <div class="hero-gradient-mesh"></div>
+      <div class="absolute inset-0 z-0 opacity-25 bg-cover bg-center mix-blend-overlay" style="background-image: url('assets/drone_crop_health_1785994900642.jpg');"></div>
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#020604] via-[#020604]/95 to-transparent"></div>
+
+      <div class="relative z-10 max-w-3xl space-y-7">
+        <div class="flex flex-wrap gap-2.5 items-center">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-300 text-xs font-bold tracking-wide shadow-lg">
+            <span class="status-dot active"></span> Latest Available Satellite Imagery: Sentinel-2 Multispectral Synced
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-400/40 text-emerald-300 text-xs font-semibold shadow-md">
+            🌍 Hardware-Free • Satellite Powered • Demo Data
+          </div>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+          Satellite-Powered AI Crop Health & <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-green-300 to-cyan-400">Environmental Risk Shield</span>
+        </h1>
+
+        <p class="text-base sm:text-lg text-gray-300 leading-relaxed font-normal">
+          EcoShield AI combines orbital Sentinel-2 satellite imagery, Google Earth Engine observation data, AlphaEarth land cover insights, and WeatherNext microclimate forecasting to deliver AI-powered agricultural insights without requiring field hardware.
+        </p>
+
+        <div class="flex flex-wrap gap-4 pt-2">
+          <button onclick="document.getElementById('scanner-section').scrollIntoView({behavior:'smooth'})" class="btn-primary">
+            <span>🛰️</span> Run Satellite AI Scan
+          </button>
+          <button onclick="document.getElementById('map-section').scrollIntoView({behavior:'smooth'})" class="btn-secondary">
+            <span>🗺️</span> Explore GIS Satellite Map
+          </button>
+        </div>
+
+        <!-- Metric Ticker Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-white/10">
+          <div>
+            <div class="text-xs text-gray-400 font-medium">Managed Farmland</div>
+            <div class="text-2xl font-extrabold text-white mt-1 counter-val">12,480 Ha</div>
+            <div class="text-[10px] text-emerald-400 mt-0.5">Google Maps Visualization</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">Sentinel-2 NDVI Avg</div>
+            <div class="text-2xl font-extrabold text-emerald-400 mt-1 counter-val">0.84</div>
+            <div class="text-[10px] text-emerald-500 mt-0.5">Chlorophyll Vigor</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">Water Conserved</div>
+            <div class="text-2xl font-extrabold text-cyan-400 mt-1 counter-val">18.4M L</div>
+            <div class="text-[10px] text-cyan-500 mt-0.5">WeatherNext Drip Model</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">Carbon Sequestration</div>
+            <div class="text-2xl font-extrabold text-lime-400 mt-1 counter-val">4,120 T</div>
+            <div class="text-[10px] text-lime-500 mt-0.5">AlphaEarth Insights</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Interactive GIS Farm Map Section -->
+    <section id="map-section" class="space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Earth Observation Dashboard</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Interactive GIS Satellite Map</h2>
+        </div>
+
+        <div class="flex bg-black/40 backdrop-blur-xl p-1.5 rounded-full border border-white/10 text-xs gap-1">
+          <button id="map-btn-sat" class="active px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-bold transition-all">
+            🛰️ True Color Satellite
+          </button>
+          <button id="map-btn-ndvi" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-400 font-bold hover:text-white transition-all">
+            🌿 Sentinel-2 NDVI Heatmap
+          </button>
+          <button id="map-btn-thermal" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-400 font-bold hover:text-white transition-all">
+            🌡️ Thermal Microclimate
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 relative h-[500px] rounded-[28px] overflow-hidden border border-emerald-500/25 shadow-2xl glass-panel">
+          <div id="map-container" class="w-full h-full"></div>
+          <div class="absolute top-4 left-4 z-[400] bg-black/80 backdrop-blur-xl px-4 py-2.5 rounded-full border border-white/15 text-xs text-gray-200 flex items-center gap-2.5 shadow-2xl">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Click parcel polygon for Google Earth Engine observation data
+          </div>
+        </div>
+
+        <div id="parcel-detail-panel" class="lg:col-span-1">
+          <div class="glass-panel p-6 space-y-5 h-full flex flex-col justify-center text-center">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl mx-auto text-emerald-400 shadow-xl">
+              📍
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">Select a Parcel on the Map</h3>
+              <p class="text-xs text-gray-400 mt-1">Click Plot Alpha, Beta, Gamma, or Delta to inspect the latest available Sentinel-2 imagery, AlphaEarth vegetation insights, and Gemini AI recommendations.</p>
+            </div>
+            <div class="pt-2">
+              <button onclick="selectParcelForDetails('plot-alpha')" class="btn-secondary text-xs w-full justify-center">
+                Inspect Plot Alpha (Wheat)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Environmental Insights Dashboard Cards & Executive Summary Card -->
+    <section id="dashboard-cards" class="space-y-6">
+      <div>
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">AlphaEarth & WeatherNext Analytics</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Environmental Insights</h2>
+      </div>
+
+      <!-- Executive "Today's AI Summary" Card -->
+      <div class="glass-panel executive-summary-card p-6 sm:p-8 space-y-6 rounded-[28px]">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-emerald-500/20">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-lg shadow-lg">
+              ✨
+            </div>
+            <div>
+              <h3 class="text-xl font-extrabold text-white tracking-tight">Today's AI Executive Summary</h3>
+              <p class="text-xs text-gray-400">Synthesized from Sentinel-2 satellite imagery, WeatherNext, & Gemini AI</p>
+            </div>
+          </div>
+          <span class="badge-glow">UPDATED JUST NOW</span>
+        </div>
+
+        <!-- 4 Key Diagnostic Pills Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+            <span class="text-2xl">🌿</span>
+            <div>
+              <div class="text-[11px] text-gray-400 font-semibold">Crop Health</div>
+              <div class="text-xs font-extrabold text-emerald-400 mt-0.5">0.84 NDVI — Optimal Vigor</div>
+            </div>
+          </div>
+
+          <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+            <span class="text-2xl">💧</span>
+            <div>
+              <div class="text-[11px] text-gray-400 font-semibold">Water Stress</div>
+              <div class="text-xs font-extrabold text-cyan-400 mt-0.5">Low — 78% Moisture Saturation</div>
+            </div>
+          </div>
+
+          <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+            <span class="text-2xl">🔥</span>
+            <div>
+              <div class="text-[11px] text-gray-400 font-semibold">Weather Risk</div>
+              <div class="text-xs font-extrabold text-amber-400 mt-0.5">Moderate — 31°C Heat Elevation</div>
+            </div>
+          </div>
+
+          <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+            <span class="text-2xl">🛡️</span>
+            <div>
+              <div class="text-[11px] text-gray-400 font-semibold">Disease Risk</div>
+              <div class="text-xs font-extrabold text-emerald-300 mt-0.5">Low Risk — Conditions currently unfavorable for disease development.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concise Executive AI Recommendation Box -->
+        <div class="bg-emerald-950/40 p-4 sm:p-5 rounded-2xl border border-emerald-500/35 flex items-start gap-3.5">
+          <span class="text-xl shrink-0">💡</span>
+          <div>
+            <div class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">Concise AI Recommendation</div>
+            <p class="text-xs text-gray-200 mt-1 leading-relaxed font-medium">
+              Schedule nocturnal pulse drip irrigation before sunrise to mitigate predicted thermal elevation in Plot Beta Vineyard.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Environmental Insights Metric Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+        
+        <!-- Card 1: Sentinel-2 NDVI -->
+        <div class="glass-panel p-6 space-y-4 glass-card-interactive border-emerald-500/30">
+          <div class="flex justify-between items-start">
+            <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-400/35 flex items-center justify-center text-emerald-400 text-xl shadow-lg">
+              🌿
+            </div>
+            <span class="badge-glow">OPTIMAL</span>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">Sentinel-2 Crop Vigor (NDVI)</div>
+            <div class="text-3xl font-extrabold text-white mt-1">0.84 <span class="text-xs font-normal text-emerald-400">+4% vs 30d</span></div>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden border border-white/5">
+            <div class="bg-gradient-to-r from-emerald-400 to-green-300 h-full" style="width: 84%;"></div>
+          </div>
+          <p class="text-xs text-gray-400">Photosynthetic saturation calculated via Sentinel-2 Near-Infrared B8/B4 ratio.</p>
+        </div>
+
+        <!-- Card 2: WeatherNext Soil Hydration -->
+        <div class="glass-panel p-6 space-y-4 glass-card-interactive border-cyan-500/30">
+          <div class="flex justify-between items-start">
+            <div class="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-400 text-xl shadow-lg">
+              💧
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/35">BALANCED</span>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">NDWI Moisture Saturation Index</div>
+            <div class="text-3xl font-extrabold text-white mt-1">78% <span class="text-xs font-normal text-cyan-400">4.2mm ET</span></div>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden border border-white/5">
+            <div class="bg-gradient-to-r from-cyan-400 to-blue-400 h-full" style="width: 78%;"></div>
+          </div>
+          <p class="text-xs text-gray-400">WeatherNext AI evapotranspiration model predicts optimal root hydration.</p>
+        </div>
+
+        <!-- Card 3: WeatherNext Thermal Risk -->
+        <div class="glass-panel p-6 space-y-4 glass-card-interactive border-amber-500/30">
+          <div class="flex justify-between items-start">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-400/35 flex items-center justify-center text-amber-400 text-xl shadow-lg">
+              🔥
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/35">HEAT ALERT</span>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">WeatherNext Thermal Risk</div>
+            <div class="text-3xl font-extrabold text-white mt-1">Moderate <span class="text-xs font-normal text-amber-400">31°C Max</span></div>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden border border-white/5">
+            <div class="bg-gradient-to-r from-amber-400 to-yellow-400 h-full" style="width: 45%;"></div>
+          </div>
+          <p class="text-xs text-gray-400">Thermal infrared satellite scan indicates localized microclimate heat elevation.</p>
+        </div>
+
+        <!-- Card 4: AlphaEarth Soil Carbon -->
+        <div class="glass-panel p-6 space-y-4 glass-card-interactive border-lime-500/30">
+          <div class="flex justify-between items-start">
+            <div class="w-11 h-11 rounded-2xl bg-lime-500/15 border border-lime-400/35 flex items-center justify-center text-lime-400 text-xl shadow-lg">
+              🌍
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-lime-500/15 text-lime-300 border border-lime-500/35">98% SCORE</span>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 font-medium">AlphaEarth Land & Vegetation</div>
+            <div class="text-3xl font-extrabold text-white mt-1">3.8 <span class="text-xs font-normal text-lime-400">Tons CO2/Ha</span></div>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden border border-white/5">
+            <div class="bg-gradient-to-r from-lime-400 to-emerald-400 h-full" style="width: 88%;"></div>
+          </div>
+          <p class="text-xs text-gray-400">Earth observation analysis indicates strong carbon sequestration potential.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. Environmental Analytics Engine Charts -->
+    <section id="analytics-section" class="space-y-6">
+      <div>
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Earth Observation Analytics</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Orbital Analytics & Yield Predictions</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 glass-panel p-6 sm:p-7 space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-base font-bold text-white">30-Day NDVI Crop Health Vigor Timeline</h3>
+              <p class="text-xs text-gray-400">Sentinel-2 orbital multispectral ratio (B8/B4) across active parcels</p>
+            </div>
+            <span class="text-xs text-emerald-400 font-mono">Sentinel-2 Satellite Imagery</span>
+          </div>
+          <div class="h-72 w-full">
+            <canvas id="chart-ndvi"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-1 glass-panel p-6 sm:p-7 space-y-4">
+          <div>
+            <h3 class="text-base font-bold text-white">WeatherNext Soil Moisture Forecast (24h)</h3>
+            <p class="text-xs text-gray-400">NDWI hydric index vs ideal root threshold</p>
+          </div>
+          <div class="h-72 w-full">
+            <canvas id="chart-moisture"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-6 sm:p-7 space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-base font-bold text-white">AlphaEarth AI Yield Projections vs Regional Benchmarks</h3>
+            <p class="text-xs text-gray-400">AI-generated yield estimates based on satellite imagery and historical environmental data.</p>
+          </div>
+          <span class="badge-glow">+12.4% Projected Yield</span>
+        </div>
+        <div class="h-64 w-full">
+          <canvas id="chart-yield"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Interactive AI Parcel Scanner Form -->
+    <section id="scanner-section" class="space-y-6">
+      <div>
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Orbital AI Diagnostic Scan</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Run Custom Satellite & AI Parcel Scan</h2>
+      </div>
+
+      <div class="glass-panel p-6 sm:p-9 space-y-6 border-emerald-500/35">
+        <form id="ai-scan-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-2">Parcel Coordinates / Region</label>
+            <input type="text" id="scan-input-location" value="37.7749, -122.4194 (Valley Sector 4)" class="w-full bg-black/60 border border-white/15 rounded-2xl px-4 py-3 text-xs text-white focus:border-emerald-400 focus:outline-none transition-all" placeholder="Enter lat, lon or city" required />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-2">Crop Classification</label>
+            <select id="scan-input-crop" class="w-full bg-black/60 border border-white/15 rounded-2xl px-4 py-3 text-xs text-white focus:border-emerald-400 focus:outline-none transition-all">
+              <option value="Organic Hard Winter Wheat">Organic Hard Winter Wheat</option>
+              <option value="Cabernet Sauvignon Grapes">Cabernet Sauvignon Grapes</option>
+              <option value="Grain Corn (Maize)">Grain Corn (Maize)</option>
+              <option value="Picual Olives">Picual Olives</option>
+              <option value="Almond Orchards">Almond Orchards</option>
+              <option value="Soybeans">Soybeans</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-2">Parcel Size (Hectares)</label>
+            <input type="number" id="scan-input-hectares" value="240" class="w-full bg-black/60 border border-white/15 rounded-2xl px-4 py-3 text-xs text-white focus:border-emerald-400 focus:outline-none transition-all" required />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-2">Soil Classification</label>
+            <select id="scan-input-soil" class="w-full bg-black/60 border border-white/15 rounded-2xl px-4 py-3 text-xs text-white focus:border-emerald-400 focus:outline-none transition-all">
+              <option value="Clay Loam">Clay Loam</option>
+              <option value="Sandy Loam">Sandy Loam</option>
+              <option value="Silt Loam">Silt Loam</option>
+              <option value="Alluvial Soil">Alluvial Soil</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
+            <button type="submit" class="btn-primary w-full sm:w-auto">
+              <span>🛰️</span> Start Sentinel-2 & Gemini AI Scan
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Scan Results Container -->
+      <div id="scan-results-container" class="hidden space-y-6 pt-4"></div>
+    </section>
+
+    <!-- 6. ShieldAI / Gemini Assistant Panel -->
+    <section id="ai-assistant" class="space-y-6">
+      <div>
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">24/7 Gemini Precision Agronomist</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Gemini Precision Agronomy Assistant</h2>
+      </div>
+
+      <div class="glass-panel p-6 sm:p-9 space-y-6 border-emerald-500/35">
+        <div class="space-y-2">
+          <div class="text-xs text-gray-400 font-semibold">Suggested Satellite & AI Queries:</div>
+          <div id="ai-prompt-chips" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div id="chat-messages-box" class="h-80 overflow-y-auto space-y-4 p-5 rounded-2xl bg-black/50 border border-white/10">
+          <div class="flex justify-start">
+            <div class="chat-message-ai max-w-[85%] sm:max-w-[75%] space-y-2">
+              <div class="flex items-center gap-2 pb-2 border-b border-emerald-500/20">
+                <span class="text-xs font-bold text-emerald-400">🛡️ Gemini Precision Agronomy Bot</span>
+              </div>
+              <p class="text-xs text-gray-200">
+                I can help explain crop health, weather risks, irrigation recommendations, vegetation changes, and sustainable farming practices using satellite imagery and AI.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <form id="chat-input-form" class="flex gap-3">
+          <input type="text" id="chat-input-text" placeholder="Ask Gemini about satellite irrigation models, disease risks, or yield optimization..." class="flex-1 bg-black/60 border border-white/15 rounded-2xl px-5 py-3.5 text-xs text-white focus:border-emerald-400 focus:outline-none transition-all" required />
+          <button type="submit" class="btn-primary text-xs px-7">
+            <span>Ask AI</span> <span>🚀</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Multi-Stage AI Scanner Modal Progress Overlay -->
+  <div id="scanner-modal-overlay" class="modal-overlay">
+    <div class="modal-content p-9 text-center space-y-6 relative overflow-hidden">
+      <div class="scan-line"></div>
+      
+      <div class="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-400 flex items-center justify-center text-3xl mx-auto shadow-2xl shadow-emerald-500/50 animate-pulse">
+        🛰️
+      </div>
+
+      <div class="space-y-2">
+        <h3 id="scanner-stage-title" class="text-xl font-extrabold text-white">Stage 1/4: Sentinel-2 Satellite Imagery Acquisition</h3>
+        <p id="scanner-stage-subtitle" class="text-xs text-gray-400">Fetching multispectral satellite bands...</p>
+      </div>
+
+      <div class="w-full bg-black/60 h-3 rounded-full overflow-hidden border border-white/15">
+        <div id="scanner-progress-fill" class="scanner-progress-fill" style="width: 0%;"></div>
+      </div>
+
+      <div class="text-sm font-extrabold text-emerald-400 font-mono" id="scanner-progress-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-emerald-500/20 bg-[#020604] py-12 mt-16 text-xs text-gray-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🌱</span>
+        <div>
+          <div class="font-bold text-white text-sm">EcoShield AI Platform</div>
+          <div class="text-gray-500">Google AI for the Planet Challenge Demo</div>
+        </div>
+      </div>
+
+      <div class="flex gap-6 text-gray-400 font-medium">
+        <a href="#hero-section" class="hover:text-emerald-400 transition-all">Overview</a>
+        <a href="#map-section" class="hover:text-emerald-400 transition-all">GIS Map</a>
+        <a href="#scanner-section" class="hover:text-emerald-400 transition-all">AI Scan</a>
+        <a href="#ai-assistant" class="hover:text-emerald-400 transition-all">Gemini AI Bot</a>
+      </div>
+
+      <div class="text-gray-500">
+        100% Remote Sensing &bull; Powered by Google Earth Engine & AlphaEarth
+      </div>
+    </div>
+  </footer>
+
+  <!-- Project Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
