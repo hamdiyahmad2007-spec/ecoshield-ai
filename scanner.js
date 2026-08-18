@@ -132,7 +132,7 @@ function displayScanResults(diag) {
         </div>
 
         <div class="relative h-72 sm:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-          <img id="result-spectral-img" src="assets/satellite_field_ndvi.jpg" onerror="this.onerror=null;this.src='assets/satellite_field_ndvi_1785994886143.jpg';" class="w-full h-full object-cover transition-all duration-500" alt="Satellite Crop Scan" />
+          <img id="result-spectral-img" src="satellite_field_ndvi.jpg" onerror="this.onerror=null;this.src='satellite_field_ndvi_1785994886143.jpg';" class="w-full h-full object-cover transition-all duration-500" alt="Satellite Crop Scan" />
           <div class="scan-line"></div>
           <div class="absolute bottom-4 left-4 bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-xs text-emerald-400 font-mono">
             SATELLITE LAYER: Sentinel-2 Multispectral Index
@@ -180,13 +180,13 @@ function switchResultMapImage(mode) {
   });
 
   if (mode === 'ndvi') {
-    imgEl.src = "assets/satellite_field_ndvi.jpg";
+    imgEl.src = "satellite_field_ndvi_1785994886143.jpg";
     if (btnNdvi) btnNdvi.className = "px-3 py-1 text-xs rounded-lg bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-semibold";
   } else if (mode === 'drone') {
-    imgEl.src = "assets/drone_crop_health.jpg";
+    imgEl.src = "drone_crop_health_1785994900642.jpg";
     if (btnDrone) btnDrone.className = "px-3 py-1 text-xs rounded-lg bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-semibold";
   } else if (mode === 'thermal') {
-    imgEl.src = "assets/thermal_moisture_map.jpg";
+    imgEl.src = "thermal_moisture_map_1785994991110.jpg";
     if (btnThermal) btnThermal.className = "px-3 py-1 text-xs rounded-lg bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-semibold";
   }
 }
